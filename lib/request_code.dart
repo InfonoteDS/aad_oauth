@@ -30,6 +30,7 @@ class RequestCode {
     final urlParams = _constructUrlParams();
     final launchUri = Uri.parse('${_authorizationRequest.url}?$urlParams');
     final controller = WebViewController();
+    controller.enableZoom(false);
     await controller.setNavigationDelegate(_navigationDelegate);
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
 
