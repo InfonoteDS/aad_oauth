@@ -118,7 +118,6 @@ class WebOAuth extends CoreOAuth {
   Future<Either<Failure, Token>> refreshToken() {
     final completer = Completer<Either<Failure, Token>>();
 
-print("Calling refresg token");
     jsRefreshToken(
       allowInterop(
           (value) => completer.complete(Right(Token(accessToken: value)))),
@@ -128,7 +127,6 @@ print("Calling refresg token");
                 'Access denied or authentication canceled. Error: ${error.toString()}',
           )))),
     );
-print("Called refresg token");
 
     return completer.future;
   }

@@ -59,7 +59,6 @@ var aadOauth = (function () {
   // Will return the authentication result on success and update the
   // global authResult variable.
   async function silentlyAcquireToken() {
-console.log('SilentlyAcquireToken');
     try {
       // The redirect handler task will complete with auth results if we
       // were redirected from AAD. If not, it will complete with null
@@ -96,9 +95,10 @@ console.log('SilentlyAcquireToken');
       return  authResult = silentAuthResult;
     } catch (error) {
       console.log('Unable to silently acquire a new token: ' + error.message)
-console.log('Failed to SilentlyAcquireToken');
+      console.log('Failed to SilentlyAcquireToken');
       /// jenny added this line
       authResult = null;
+      authResultError = error;
       return null;
     }
 
@@ -193,6 +193,8 @@ console.log('Failed to SilentlyAcquireToken');
       onSuccess(authResult.accessToken ?? null);
       return
     }
+    // jenny added
+    onError(authResultError);
   }
 
   function getAccount() {
