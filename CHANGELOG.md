@@ -1,6 +1,28 @@
 # Changelog
 
+Forked from [Earlybyte/aad_oauth](https://github.com/Earlybyte/aad_oauth) at v1.0.2.
+
 ## [Unreleased]
+
+- Migrated from `package:js` / `dart:js_util` to `dart:js_interop` (Dart 3.7+ compatibility)
+  - Replaced `promiseToFuture` with `JSPromise.toDart`
+  - Replaced `allowInterop` with `.toJS`
+  - Updated external JS function signatures to use `JSFunction` and `JSPromise` types
+- Updated `flutter_secure_storage` from ^9.0.0 to ^10.0.0
+- Removed `package:js` dependency
+
+## [1.0.2] - First fork release
+
+- Enable redirect handler also in silent token acquisition (#326)
+- Allow `select_account` prompt value by not clearing cookies on logout (#331)
+- Added `copyWith` method for Config (#320)
+- Specify Flutter version constraint (>=3.13.0), improve example (#304)
+- Resolved dependency conflicts and enhanced code formatting (#302)
+- Patches to msalv2.js
+
+---
+
+# Original Earlybyte Changelog
 
 ## [1.0.1] - 20230215
 
@@ -8,7 +30,7 @@
 - Fix/inline linter rules to prevent conflict https://github.com/Earlybyte/aad_oauth/pull/279 (by @mikedigit)
 - **Breaking** Update willpopscope to popscope https://github.com/Earlybyte/aad_oauth/pull/291 (by @elijahjohnston) fix: either upgrade Flutter to 3.16 or downgrade AAD_OAUTH to 1.0.0
 - Add login hint for web https://github.com/Earlybyte/aad_oauth/pull/292 (by @elijahjohnston)
-- ✨ feat: add onPageFinished function in Config https://github.com/Earlybyte/aad_oauth/pull/280 (by @tajjacob)
+- Add onPageFinished function in Config https://github.com/Earlybyte/aad_oauth/pull/280 (by @tajjacob)
 
 ## [1.0.0] - 20231010
 
