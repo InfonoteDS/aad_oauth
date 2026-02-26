@@ -12,8 +12,7 @@ import 'package:aad_oauth/model/failure.dart';
 import 'package:aad_oauth/model/msalconfig.dart';
 import 'package:aad_oauth/model/token.dart';
 import 'package:dartz/dartz.dart';
-import 'package:js/js.dart';
-import 'package:js/js_util.dart';
+import 'dart:js_interop';
 
 @JS('init')
 external void jsInit(MsalConfig config);
@@ -22,30 +21,30 @@ external void jsInit(MsalConfig config);
 external void jsLogin(
   bool refreshIfAvailable,
   bool useRedirect,
-  void Function(dynamic) onSuccess,
-  void Function(dynamic) onError,
+  JSFunction onSuccess,
+  JSFunction onError,
 );
 
 @JS('logout')
 external void jsLogout(
-  void Function() onSuccess,
-  void Function(dynamic) onError,
+  JSFunction onSuccess,
+  JSFunction onError,
   bool showPopup,
 );
 
 @JS('getAccessToken')
-external Object jsGetAccessToken();
+external JSPromise<JSString?> jsGetAccessToken();
 
 @JS('getIdToken')
-external Object jsGetIdToken();
+external JSPromise<JSString?> jsGetIdToken();
 
 @JS('hasCachedAccountInformation')
 external bool jsHasCachedAccountInformation();
 
 @JS('refreshToken')
 external void jsRefreshToken(
-  void Function(dynamic) onSuccess,
-  void Function(dynamic) onError,
+  JSFunction onSuccess,
+  JSFunction onError,
 );
 
 class WebOAuth extends CoreOAuth {
@@ -82,12 +81,14 @@ class WebOAuth extends CoreOAuth {
 
   @override
   Future<String?> getAccessToken() async {
-    return promiseToFuture(jsGetAccessToken());
+    final result = await jsGetAccessToken().toDart;
+    return result?.toDart;
   }
 
   @override
   Future<String?> getIdToken() async {
-    return promiseToFuture(jsGetIdToken());
+    final result = await jsGetIdToken().toDart;
+    return result?.toDart;
   }
 
   @override
@@ -102,13 +103,12 @@ class WebOAuth extends CoreOAuth {
     jsLogin(
       refreshIfAvailable,
       config.webUseRedirect,
-      allowInterop(
-          (value) => completer.complete(Right(Token(accessToken: value)))),
-      allowInterop((error) => completer.complete(Left(AadOauthFailure(
+      ((value) => completer.complete(Right(Token(accessToken: value)))).toJS,
+      ((error) => completer.complete(Left(AadOauthFailure(
             errorType: ErrorType.accessDeniedOrAuthenticationCanceled,
             message:
                 'Access denied or authentication canceled. Error: ${error.toString()}',
-          )))),
+          )))).toJS,
     );
 
     return completer.future;
@@ -119,13 +119,12 @@ class WebOAuth extends CoreOAuth {
     final completer = Completer<Either<Failure, Token>>();
 
     jsRefreshToken(
-      allowInterop(
-          (value) => completer.complete(Right(Token(accessToken: value)))),
-      allowInterop((error) => completer.complete(Left(AadOauthFailure(
+      ((value) => completer.complete(Right(Token(accessToken: value)))).toJS,
+      ((error) => completer.complete(Left(AadOauthFailure(
             errorType: ErrorType.accessDeniedOrAuthenticationCanceled,
             message:
                 'Access denied or authentication canceled. Error: ${error.toString()}',
-          )))),
+          )))).toJS,
     );
 
     return completer.future;
@@ -136,8 +135,8 @@ class WebOAuth extends CoreOAuth {
     final completer = Completer<void>();
 
     jsLogout(
-      allowInterop(completer.complete),
-      allowInterop((error) => completer.completeError(error)),
+      (() => completer.complete()).toJS,
+      ((error) => completer.completeError(error)).toJS,
       showPopup,
     );
 
