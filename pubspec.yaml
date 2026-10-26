@@ -5,7 +5,7 @@ version: 1.0.2
 homepage: https://github.com/Earlybyte/aad_oauth
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0" # 3.3 needed for extension types (dart:js_interop migration)
   flutter: ">=3.13.0" # Because of PopScope at least Flutter 3.13 is required to run aad_oauth >=1.0.1
 
 dependencies:

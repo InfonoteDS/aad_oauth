@@ -47,6 +47,24 @@ external void jsRefreshToken(
   JSFunction onError,
 );
 
+/// Reads a JS error-like value's `.message` property, if it has one — the
+/// JS side (assets/msalv2.js) passes real `Error` objects to onError.
+/// `dart:js_interop`'s typed callbacks don't dynamically proxy through to
+/// the underlying JS object's own toString() the way the old loose
+/// `dynamic`-based interop did, so a bare `.toString()` here would silently
+/// show something unhelpful instead of the actual error message.
+extension type _JSError._(JSObject _) implements JSObject {
+  external JSString? get message;
+}
+
+String _jsErrorMessage(JSAny? error) {
+  if (error != null && error.isA<JSObject>()) {
+    final message = (error as _JSError).message;
+    if (message != null) return message.toDart;
+  }
+  return error?.toString() ?? 'Unknown error';
+}
+
 class WebOAuth extends CoreOAuth {
   final Config config;
   WebOAuth(this.config) {
@@ -103,11 +121,12 @@ class WebOAuth extends CoreOAuth {
     jsLogin(
       refreshIfAvailable,
       config.webUseRedirect,
-      ((value) => completer.complete(Right(Token(accessToken: value)))).toJS,
-      ((error) => completer.complete(Left(AadOauthFailure(
+      // the JS side sends `accessToken ?? null`, so this must be nullable
+      ((String? value) => completer.complete(Right(Token(accessToken: value)))).toJS,
+      ((JSAny? error) => completer.complete(Left(AadOauthFailure(
             errorType: ErrorType.accessDeniedOrAuthenticationCanceled,
             message:
-                'Access denied or authentication canceled. Error: ${error.toString()}',
+                'Access denied or authentication canceled. Error: ${_jsErrorMessage(error)}',
           )))).toJS,
     );
 
@@ -119,11 +138,11 @@ class WebOAuth extends CoreOAuth {
     final completer = Completer<Either<Failure, Token>>();
 
     jsRefreshToken(
-      ((value) => completer.complete(Right(Token(accessToken: value)))).toJS,
-      ((error) => completer.complete(Left(AadOauthFailure(
+      ((String? value) => completer.complete(Right(Token(accessToken: value)))).toJS,
+      ((JSAny? error) => completer.complete(Left(AadOauthFailure(
             errorType: ErrorType.accessDeniedOrAuthenticationCanceled,
             message:
-                'Access denied or authentication canceled. Error: ${error.toString()}',
+                'Access denied or authentication canceled. Error: ${_jsErrorMessage(error)}',
           )))).toJS,
     );
 
@@ -136,7 +155,7 @@ class WebOAuth extends CoreOAuth {
 
     jsLogout(
       (() => completer.complete()).toJS,
-      ((error) => completer.completeError(error)).toJS,
+      ((JSAny error) => completer.completeError(error)).toJS,
       showPopup,
     );
 
